@@ -1,4 +1,4 @@
-lflask
+flask
 python-dotenv
 requests
 openai
