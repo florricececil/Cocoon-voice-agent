@@ -1,18 +1,15 @@
 from flask import Flask, request
-import os
-import asyncio
+import os, asyncio
 from livekit import api
 from dotenv import load_dotenv
-
-# Load.env if it exists, but DON'T crash if missing (Render has no.env)
 load_dotenv()
 
 app = Flask(__name__)
 
 LIVEKIT_URL = os.getenv("LIVEKIT_URL")
-LIVEKIT_KEY = os.getenv("LIVEKIT_KEY")
-LIVEKIT_SECRET = os.getenv("LIVEKIT_SECRET")
-AGENT_NAME = os.getenv("AGENT_NAME", "CA_JXVnMgpwh9Qp")
+LIVEKIT_KEY = os.getenv("LIVEKIT_API_KEY")
+LIVEKIT_SECRET = os.getenv("LIVEKIT_API_SECRET")
+AGENT_NAME = os.getenv("AGENT_NAME", "Wish")
 VERIFY_TOKEN = os.getenv("VERIFY_TOKEN", "CocoonVoice2025")
 
 @app.route("/")
@@ -33,7 +30,6 @@ def incoming():
         if 'messages' in val:
             from_num = val['messages'][0]['from']
             print(f"WhatsApp from {from_num}")
-
             async def dispatch():
                 lk = api.LiveKitAPI(LIVEKIT_URL, LIVEKIT_KEY, LIVEKIT_SECRET)
                 room = f"whatsapp-{from_num}"
@@ -46,10 +42,9 @@ def incoming():
                     )
                 )
                 await lk.aclose()
-
             asyncio.run(dispatch())
     except Exception as e:
-        print("Webhook Error:", e)
+        print("Error:", e)
     return "OK", 200
 
 if __name__ == "__main__":
