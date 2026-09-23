@@ -1,6 +1,11 @@
 from flask import Flask, request
 import os
-import requests
+
+# Optional import - won't crash if missing
+try:
+    import requests
+except:
+    requests = None
 
 app = Flask(__name__)
 
@@ -10,35 +15,28 @@ PHONE_NUMBER_ID = os.environ.get("PHONE_NUMBER_ID")
 
 @app.route('/')
 def home():
-    return "Cocoon Voice Agent is running"
+    return "Cocoon Voice Agent is running", 200
 
 @app.route('/privacy')
 def privacy():
-    return "Privacy Policy for Cocoon Voice Agent: We do not store personal data. WhatsApp messages are processed to provide real estate responses and are not shared."
+    return "Privacy Policy for Cocoon Voice Agent: We do not store personal data. WhatsApp messages are processed to provide real estate responses and are not shared.", 200
 
 @app.route('/webhook', methods=['GET'])
 def verify_webhook():
     mode = request.args.get("hub.mode")
     token = request.args.get("hub.verify_token")
     challenge = request.args.get("hub.challenge")
-    
     if mode == "subscribe" and token == VERIFY_TOKEN:
         return challenge, 200
-    else:
-        return "Verification failed", 403
+    return "Verification failed", 403
 
 @app.route('/webhook', methods=['POST'])
 def webhook():
-    data = request.get_json()
-    print(f"Incoming webhook data: {data}")
-    
-    try:
-        if data and "entry" in data:
-            for entry in data["entry"]:
-                for change in entry.get("changes", []):
-                    value = change.get("value", {})
-                    messages = value.get("messages", [])
-                    for message in messages:
-                        from_number = message.get("from")
-                        text_body = message.get("text", {}).get("body", "")
-                        print
+    data = request.get_json(silent=True)
+    print(f"WEBHOOK RECEIVED: {data}", flush=True)
+    # Just return OK to keep Facebook happy - your bot logic can be added after
+    return "OK", 200
+
+if __name__ == '__main__':
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host='0.0.0.0', port=port)
