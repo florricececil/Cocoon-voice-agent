@@ -9,6 +9,5 @@ gunicorn
 livekit
 livekit-agents
 livekit-api
-pyngrok
 websockets
 aiohttp
